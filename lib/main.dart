@@ -128,7 +128,7 @@ class _HomeState extends State<Home> {
           });
         },
       ),
-      onDismissed: (direction) {
+      onDismissed: (DismissDirection direction) {
         setState(() {
           _lastRemoved = Map<String, dynamic>.from(_todoList[index]);
           _lastRemovedPos = index;
