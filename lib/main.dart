@@ -19,7 +19,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final TextEditingController _toDoController = TextEditingController();
 
-  List<dynamic> _todoList = [];
+  List<Map<String, dynamic>> _todoList = [];
   Map<String, dynamic> _lastRemoved;
   int _lastRemovedPos;
 
@@ -29,9 +29,18 @@ class _HomeState extends State<Home> {
 
     _readData().then((String data) {
       setState(() {
-        _todoList = json.decode(data);
+        _todoList = (jsonDecode(data) as List)
+            .map((dynamic e) => e as Map<String, dynamic>)
+            ?.toList();
       });
     });
+  }
+
+  bool toBoolean(String str, [bool strict]) {
+    if (strict == true) {
+      return str == '1' || str == 'true';
+    }
+    return str != '0' && str != 'false' && str != '';
   }
 
   void addToDo() {
@@ -47,13 +56,15 @@ class _HomeState extends State<Home> {
   }
 
   Future<Null> _refresh() async {
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<dynamic>.delayed(const Duration(seconds: 1));
 
     setState(() {
-      _todoList.sort((a, b) {
-        if (a["checked"] && !b["checked"]) {
+      _todoList.sort((dynamic a, dynamic b) {
+        if (toBoolean(a['checked'].toString()) &&
+            !toBoolean(b['checked'].toString())) {
           return 1;
-        } else if (!a["checked"] && b["checked"]) {
+        } else if (!toBoolean(a['checked'].toString()) &&
+            toBoolean(b['checked'].toString())) {
           return -1;
         } else {
           return 0;
@@ -104,9 +115,11 @@ class _HomeState extends State<Home> {
       direction: DismissDirection.startToEnd,
       child: CheckboxListTile(
         title: Text(_todoList[index]['title'].toString()),
-        value: _todoList[index]['checked'],
+        value: toBoolean(_todoList[index]['checked'].toString()),
         secondary: CircleAvatar(
-          child: Icon(_todoList[index]['checked'] ? Icons.check : Icons.error),
+          child: Icon(toBoolean(_todoList[index]['checked'].toString())
+              ? Icons.check
+              : Icons.error),
         ),
         onChanged: (bool c) {
           setState(() {
@@ -117,7 +130,7 @@ class _HomeState extends State<Home> {
       ),
       onDismissed: (direction) {
         setState(() {
-          _lastRemoved = Map.from(_todoList[index]);
+          _lastRemoved = Map<String, dynamic>.from(_todoList[index]);
           _lastRemovedPos = index;
           _todoList.removeAt(index);
 
