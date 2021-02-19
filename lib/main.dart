@@ -19,7 +19,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final TextEditingController _toDoController = TextEditingController();
 
-  List<Map<String, dynamic>> _todoList = [];
+  List<Map<String, dynamic>> _todoList;
   Map<String, dynamic> _lastRemoved;
   int _lastRemovedPos;
 
@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
 
     _readData().then((String data) {
       setState(() {
-        _todoList = (jsonDecode(data) as List)
+        _todoList = (jsonDecode(data) as List<dynamic>)
             .map((dynamic e) => e as Map<String, dynamic>)
             ?.toList();
       });
@@ -55,7 +55,7 @@ class _HomeState extends State<Home> {
     });
   }
 
-  Future<Null> _refresh() async {
+  Future<void> _refresh() async {
     await Future<dynamic>.delayed(const Duration(seconds: 1));
 
     setState(() {
@@ -84,8 +84,6 @@ class _HomeState extends State<Home> {
 
   //Salva o arquivo da lista
   Future<File> _saveData() async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-
     final String data = json.encode(_todoList);
     final File file = await _getFile();
     return file.writeAsString(data);
